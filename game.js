@@ -37,13 +37,14 @@ function createPlayer() {
     left: Phaser.Input.Keyboard.KeyCodes.A,
     right: Phaser.Input.Keyboard.KeyCodes.D,
     sprint: Phaser.Input.Keyboard.KeyCodes.SHIFT,
-    dash: Phaser.Input.Keyboard.KeyCodes.SPACE,
+    fire: Phaser.Input.Keyboard.KeyCodes.SPACE,
   });
 
   pointer = this.input.activePointer;
 }
 function create() {
   this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, "sky").setScale(2);
+
   //Create player with current context (this)
   createPlayer.call(this);
 }
@@ -52,10 +53,23 @@ function update() {
 }
 
 function playerMovement() {
-  if (Phaser.Input.Keyboard.JustDown(keys.dash)) {
-    //TODO: Add dash mechanic
-    // player.body.x += player.body.velocity.x;
-    // player.body.y += player.body.velocity.y;
+  if (Phaser.Input.Keyboard.JustDown(keys.fire) || pointer.isDown) {
+    //Create Bullet Object and shoot it in the direction of the mouse
+    var bullet = this.physics.add.sprite(player.x, player.y, "bullet");
+    //Calculate the angle between the player and the mouse
+    var angle = Phaser.Math.Angle.Between(
+      player.x,
+      player.y,
+      pointer.worldX,
+      pointer.worldY
+    );
+    //Rotate the bullet to the angle
+
+    bullet.setRotation(angle + Math.PI / 2);
+    //Calculate the velocity of the bullet based on the angle
+    var velocity = this.physics.velocityFromRotation(angle, 500);
+    //Set the velocity of the bullet
+    bullet.setVelocity(velocity.x, velocity.y);
   }
 
   if (keys.left.isDown) {
