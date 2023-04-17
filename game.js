@@ -13,20 +13,13 @@ var game = new Phaser.Game(config);
 
 function preload() {
   this.load.setBaseURL("http://labs.phaser.io");
-  this.load.image("sky", "assets/sky.png");
-  this.load.image("ground", "assets/platform.png");
-  this.load.image("star", "assets/star.png");
-  this.load.image("bomb", "assets/bomb.png");
-  this.load.spritesheet("dude", "assets/dude.png", { frameWidth: 32, frameHeight: 48 });
-  this.load.setBaseURL("http://labs.phaser.io");
-
-  this.load.image("sky2", "assets/skies/space3.png");
-  this.load.image("logo", "assets/sprites/phaser3-logo.png");
-  this.load.image("red", "assets/particles/red.png");
+  this.load.image("bg", "assets/sets/background.png");
+  this.load.image("plattform3", "assets/sets/objects/platform2.png");
 }
-
+var platforms;
 function create() {
-  this.add.image(400, 300, "sky2");
+  this.add.image(400, 300, "bg");
+  this.add.image(400, 300, "plattform3");
 }
 
 function update() {}
