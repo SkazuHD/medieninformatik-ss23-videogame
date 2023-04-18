@@ -2,6 +2,11 @@ const GAME_HEIGHT = 900;
 const GAME_WIDTH = 1600;
 const PLAYER_VELOCITY = 300;
 const PLAYER_SPRINT_MULTIPLIER = 2;
+const PLAYER_MAX_FIRE_COOLDOWN = 15;
+const PLAYER_MAX_HEALTH = 100;
+var PLAYER_CAN_FIRE = true;
+var PLAYER_FIRE_COOLDOWN = PLAYER_MAX_FIRE_COOLDOWN;
+var PLAYER_HEALTH = 100;
 
 var config = {
   type: Phaser.AUTO,
@@ -53,7 +58,12 @@ function update() {
 }
 
 function playerMovement() {
-  if (Phaser.Input.Keyboard.JustDown(keys.fire) || pointer.isDown) {
+  if (
+    (Phaser.Input.Keyboard.JustDown(keys.fire) ||
+      pointer.isDown ||
+      keys.fire.isDown) &&
+    PLAYER_CAN_FIRE
+  ) {
     //Create Bullet Object and shoot it in the direction of the mouse
     var bullet = this.physics.add.sprite(player.x, player.y, "bullet");
     //Calculate the angle between the player and the mouse
@@ -70,6 +80,13 @@ function playerMovement() {
     var velocity = this.physics.velocityFromRotation(angle, 500);
     //Set the velocity of the bullet
     bullet.setVelocity(velocity.x, velocity.y);
+    PLAYER_CAN_FIRE = false;
+  } else if (!PLAYER_CAN_FIRE) {
+    PLAYER_FIRE_COOLDOWN -= 1;
+    if (PLAYER_FIRE_COOLDOWN <= 0) {
+      PLAYER_FIRE_COOLDOWN = PLAYER_MAX_FIRE_COOLDOWN;
+      PLAYER_CAN_FIRE = true;
+    }
   }
 
   if (keys.left.isDown) {
