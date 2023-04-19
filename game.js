@@ -7,6 +7,7 @@ const PLAYER_MAX_HEALTH = 100;
 var PLAYER_CAN_FIRE = true;
 var PLAYER_FIRE_COOLDOWN = PLAYER_MAX_FIRE_COOLDOWN;
 var PLAYER_HEALTH = 100;
+var zombies;
 
 var config = {
   type: Phaser.AUTO,
@@ -62,14 +63,25 @@ function create() {
   createPlayer.call(this);
 
   //Create World
+
+  //Enemys
+  this.zombies = this.physics.add.group({
+    classType: zomboy,
+    runChildUpdate: true,
+  });
+  this.zombies.get(200, 150, "player");
+  this.zombies.get(600, 450, "player");
+  this.zombies.get(200, 450, "player");
+  this.zombies.get(600, 150, "player");
 }
 function update() {
   playerMovement.call(this);
 
   //Update World
-
   //Camera Follow
   this.cameras.main.centerOn(player.x, player.y);
+
+  //Update Enemys
 }
 function playerShoot() {
   //Create Bullet Object and shoot it in the direction of the mouse
