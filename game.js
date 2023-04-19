@@ -98,6 +98,11 @@ function playerShoot() {
   var velocity = this.physics.velocityFromRotation(angle, 500);
   //Set the velocity of the bullet
   bullet.setVelocity(velocity.x, velocity.y);
+  //Collide Bullet with zombies
+  this.physics.add.collider(bullet, this.zombies, function (bullet, zombie) {
+    zombie.hit(50);
+    bullet.destroy();
+  });
   PLAYER_CAN_FIRE = false;
 }
 
