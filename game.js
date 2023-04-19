@@ -17,8 +17,10 @@ var config = {
     default: "arcade",
     arcade: {
       gravity: { y: 0 },
+      debug: true,
     },
   },
+
   scene: {
     preload: preload,
     create: create,
@@ -76,13 +78,19 @@ function create() {
   //Colliders for the player and the zombies
   this.physics.add.collider(player, this.zombies);
   this.physics.add.collider(this.zombies, this.zombies);
+
+  this.physics.world.setFPS(240);
 }
 function update() {
   playerMovement.call(this);
 
   //Update World
   //Camera Follow
-  this.cameras.main.centerOn(player.x, player.y);
+
+  //this.cameras.main.centerOn(player.x, player.y);
+
+  this.cameras.main.setBounds(0, 0, 2000, 2000);
+  this.cameras.main.startFollow(player);
 
   //Update Enemys
 }
@@ -90,7 +98,12 @@ function playerShoot() {
   //Create Bullet Object and shoot it in the direction of the mouse
   var bullet = this.physics.add.sprite(player.x, player.y, "bullet");
   //Calculate the angle between the player and the mouse
-  var angle = Phaser.Math.Angle.Between(player.x, player.y, pointer.worldX, pointer.worldY);
+  var angle = Phaser.Math.Angle.Between(
+    player.x,
+    player.y,
+    pointer.worldX,
+    pointer.worldY
+  );
   //Rotate the bullet to the angle
 
   bullet.setRotation(angle + Math.PI / 2);
