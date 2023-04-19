@@ -1,0 +1,13 @@
+body {
+  margin: 0;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+.title {
+  text-align: center;
+  font-size: 2rem;
+  margin: 1rem;
+}
+#game {
+  display: grid;
+  place-items: center;
+}

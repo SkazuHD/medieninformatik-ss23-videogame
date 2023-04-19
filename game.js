@@ -35,6 +35,7 @@ var config = {
     create: create,
     update: update,
   },
+  parent: "game",
 };
 
 var game = new Phaser.Game(config);
@@ -116,12 +117,12 @@ function spawnEnemy() {
   ) {
     if (Phaser.Math.Between(0, 1000) > 990) {
       //Spawn Enemy outside of the camera view
-      [posX, posY] = calcSpawnLocation.call(this);
-      // * NOTE * Enemy can spawn inside of View if the camera is at the edge of the world
 
-      console.debug("Spawned Enemy at " + posX + ", " + posY);
+      // * NOTE * Enemy can spawn inside of View if the camera is at the edge of the world
+      [posX, posY] = calcSpawnLocation.call(this);
       this.zombies.get(posX, posY, "player");
-      console.debug(this.cameras.main);
+      console.debug(this.cameras.main.midPoint.x);
+      console.debug(this.cameras.cameras[0].midPoint.x);
     }
   }
 }
@@ -172,9 +173,13 @@ function update() {
   playerMovement.call(this);
 
   //Update World
+  //TODO Add Chunk Generation
+
   //Camera Follow
 
-  this.cameras.main.startFollow(player);
+  this.cameras.main.startFollow(player, true, 0.1, 0.1, 0, 0);
+  //this.cameras.main.centerOn(player.x, player.y);
+
   //Spawn Enemies if there are less than the max
   spawnEnemy.call(this);
 }
