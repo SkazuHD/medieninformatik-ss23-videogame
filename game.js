@@ -73,6 +73,9 @@ function create() {
   this.zombies.get(600, 450, "player");
   this.zombies.get(200, 450, "player");
   this.zombies.get(600, 150, "player");
+  //Colliders for the player and the zombies
+  this.physics.add.collider(player, this.zombies);
+  this.physics.add.collider(this.zombies, this.zombies);
 }
 function update() {
   playerMovement.call(this);
