@@ -1,10 +1,12 @@
 const GAME_HEIGHT = 900;
 const GAME_WIDTH = 1600;
 const WORLD_INFINITE = false;
+//Only used if WORLD_INFINITE is false
 const WORLD_WIDTH = 2000;
 const WORLD_HEIGHT = 2000;
-const WORLD_MAX_ENEMIES = 100;
+const WORLD_MAX_ENEMIES = 50;
 
+//Player Variables
 const PLAYER_VELOCITY = 300;
 const PLAYER_SPRINT_MULTIPLIER = 1.8;
 const PLAYER_MAX_FIRE_COOLDOWN = 15;
@@ -12,6 +14,8 @@ const PLAYER_MAX_HEALTH = 100;
 var PLAYER_CAN_FIRE = true;
 var PLAYER_FIRE_COOLDOWN = PLAYER_MAX_FIRE_COOLDOWN;
 var PLAYER_HEALTH = 100;
+
+//Enemy Types
 var zombies;
 
 var config = {
@@ -48,6 +52,79 @@ function preload() {
   this.load.image("sprSand", "assets/world/sprSand.png");
   this.load.image("sprGrass", "assets/world/sprGrass.png");
 }
+function calcSpawnLocation() {
+  side = Phaser.Math.Between(0, 3);
+  switch (side) {
+    case 0:
+      //Top
+      console.debug("Top");
+      posX = Phaser.Math.Between(
+        this.cameras.main.midPoint.x - GAME_WIDTH,
+        this.cameras.main.midPoint.x + GAME_WIDTH
+      );
+      posY = Phaser.Math.Between(
+        this.cameras.main.midPoint.y + GAME_HEIGHT / 2,
+        this.cameras.main.midPoint.y + GAME_HEIGHT
+      );
+      break;
+    case 1:
+      //Right
+      console.debug("Right");
+      posX = Phaser.Math.Between(
+        this.cameras.main.midPoint.x + GAME_WIDTH / 2,
+        this.cameras.main.midPoint.x + GAME_WIDTH
+      );
+      posY = Phaser.Math.Between(
+        this.cameras.main.midPoint.y - GAME_HEIGHT,
+        this.cameras.main.midPoint.y + GAME_HEIGHT
+      );
+      break;
+    case 2:
+      //Bottom
+      console.debug("Bottom");
+      posX = Phaser.Math.Between(
+        this.cameras.main.midPoint.x - GAME_WIDTH,
+        this.cameras.main.midPoint.x + GAME_WIDTH
+      );
+      posY = Phaser.Math.Between(
+        this.cameras.main.midPoint.y - GAME_HEIGHT,
+        this.cameras.main.midPoint.y - GAME_HEIGHT / 2
+      );
+      break;
+    case 3:
+      //Left
+      console.debug("Left");
+      posX = Phaser.Math.Between(
+        this.cameras.main.midPoint.x - GAME_WIDTH,
+        this.cameras.main.midPoint.x - GAME_WIDTH / 2
+      );
+      posY = Phaser.Math.Between(
+        this.cameras.main.midPoint.y - GAME_HEIGHT,
+        this.cameras.main.midPoint.y + GAME_HEIGHT
+      );
+      break;
+    default:
+      console.debug("Error");
+  }
+  return [posX, posY];
+}
+
+function spawnEnemy() {
+  if (
+    this.zombies == null ||
+    this.zombies.getChildren().length < WORLD_MAX_ENEMIES
+  ) {
+    if (Phaser.Math.Between(0, 1000) > 990) {
+      //Spawn Enemy outside of the camera view
+      [posX, posY] = calcSpawnLocation.call(this);
+      // * NOTE * Enemy can spawn inside of View if the camera is at the edge of the world
+
+      console.debug("Spawned Enemy at " + posX + ", " + posY);
+      this.zombies.get(posX, posY, "player");
+      console.debug(this.cameras.main);
+    }
+  }
+}
 function createPlayer() {
   player = this.physics.add.sprite(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, "player");
 
@@ -80,35 +157,15 @@ function create() {
 
   //Create player with current context (this)
   createPlayer.call(this);
-  //Enemys
+  //Starting Enemies
   this.zombies = this.physics.add.group({
     classType: zomboy,
     runChildUpdate: true,
   });
-  this.zombies.get(
-    Phaser.Math.Between(0, WORLD_WIDTH),
-    Phaser.Math.Between(0, WORLD_HEIGHT),
-    "player"
-  );
-  this.zombies.get(
-    Phaser.Math.Between(0, WORLD_WIDTH),
-    Phaser.Math.Between(0, WORLD_HEIGHT),
-    "player"
-  );
-  this.zombies.get(
-    Phaser.Math.Between(0, WORLD_WIDTH),
-    Phaser.Math.Between(0, WORLD_HEIGHT),
-    "player"
-  );
-  this.zombies.get(
-    Phaser.Math.Between(0, WORLD_WIDTH),
-    Phaser.Math.Between(0, WORLD_HEIGHT),
-    "player"
-  );
+
   //Colliders for the player and the zombies
   this.physics.add.collider(player, this.zombies);
   this.physics.add.collider(this.zombies, this.zombies);
-
   this.physics.world.setFPS(240);
 }
 function update() {
@@ -119,16 +176,9 @@ function update() {
 
   this.cameras.main.startFollow(player);
   //Spawn Enemies if there are less than the max
-  if (this.zombies.getChildren().length < WORLD_MAX_ENEMIES) {
-    if (Phaser.Math.Between(0, 1000) > 995) {
-      this.zombies.get(
-        Phaser.Math.Between(0, WORLD_WIDTH),
-        Phaser.Math.Between(0, WORLD_HEIGHT),
-        "player"
-      );
-    }
-  }
+  spawnEnemy.call(this);
 }
+
 function playerShoot() {
   //Create Bullet Object and shoot it in the direction of the mouse
   var bullet = this.physics.add.sprite(player.x, player.y, "bullet");
