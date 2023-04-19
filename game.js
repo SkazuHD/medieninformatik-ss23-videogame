@@ -4,15 +4,23 @@ const WORLD_INFINITE = false;
 //Only used if WORLD_INFINITE is false
 const WORLD_WIDTH = 2000;
 const WORLD_HEIGHT = 2000;
-const WORLD_MAX_ENEMIES = 50;
+const WORLD_MAX_ENEMIES = 75;
 
 //Player Variables
 const PLAYER_VELOCITY = 300;
 const PLAYER_SPRINT_MULTIPLIER = 1.8;
-const PLAYER_MAX_FIRE_COOLDOWN = 15;
 const PLAYER_MAX_HEALTH = 100;
+var PLAYER_IS_VULNERABLE = false;
+var PLAYER_MAX_INVULNERABILITY_COOLDOWN = 100;
+var PLAYER_INVULNERABILITY_COOLDOWN = PLAYER_MAX_INVULNERABILITY_COOLDOWN;
+
 var PLAYER_CAN_FIRE = true;
+const PLAYER_MAX_FIRE_COOLDOWN = 15;
+
 var PLAYER_FIRE_COOLDOWN = PLAYER_MAX_FIRE_COOLDOWN;
+var PLAYER_BULLET_SPEED = 1500;
+var PLAYER_DAMAGE = 50;
+var PLAYER_AUTOAIM = true;
 var PLAYER_HEALTH = 100;
 
 //Enemy Types
@@ -58,7 +66,6 @@ function calcSpawnLocation() {
   switch (side) {
     case 0:
       //Top
-      console.debug("Top");
       posX = Phaser.Math.Between(
         this.cameras.main.midPoint.x - GAME_WIDTH,
         this.cameras.main.midPoint.x + GAME_WIDTH
@@ -70,7 +77,6 @@ function calcSpawnLocation() {
       break;
     case 1:
       //Right
-      console.debug("Right");
       posX = Phaser.Math.Between(
         this.cameras.main.midPoint.x + GAME_WIDTH / 2,
         this.cameras.main.midPoint.x + GAME_WIDTH
@@ -82,7 +88,6 @@ function calcSpawnLocation() {
       break;
     case 2:
       //Bottom
-      console.debug("Bottom");
       posX = Phaser.Math.Between(
         this.cameras.main.midPoint.x - GAME_WIDTH,
         this.cameras.main.midPoint.x + GAME_WIDTH
@@ -94,7 +99,6 @@ function calcSpawnLocation() {
       break;
     case 3:
       //Left
-      console.debug("Left");
       posX = Phaser.Math.Between(
         this.cameras.main.midPoint.x - GAME_WIDTH,
         this.cameras.main.midPoint.x - GAME_WIDTH / 2
@@ -121,8 +125,6 @@ function spawnEnemy() {
       // * NOTE * Enemy can spawn inside of View if the camera is at the edge of the world
       [posX, posY] = calcSpawnLocation.call(this);
       this.zombies.get(posX, posY, "player");
-      console.debug(this.cameras.main.midPoint.x);
-      console.debug(this.cameras.cameras[0].midPoint.x);
     }
   }
 }
@@ -134,6 +136,10 @@ function createPlayer() {
   } else {
     player.setCollideWorldBounds(true);
   }
+
+  // * Somehow Player is still pushed by other objects
+  player.immovable = true;
+  player.setBounce(0);
 
   //Player Inputs
   keys = this.input.keyboard.addKeys({
@@ -165,12 +171,31 @@ function create() {
   });
 
   //Colliders for the player and the zombies
-  this.physics.add.collider(player, this.zombies);
-  this.physics.add.collider(this.zombies, this.zombies);
+  this.physics.add.collider(player, this.zombies, function (player, zombie) {
+    if (PLAYER_IS_VULNERABLE) {
+      PLAYER_HEALTH -= zombie.damage;
+    }
+    PLAYER_IS_VULNERABLE = false;
+    PLAYER_INVULNERABILITY_COOLDOWN = PLAYER_MAX_INVULNERABILITY_COOLDOWN;
+  });
+  this.physics.add.collider(
+    this.zombies,
+    this.zombies,
+    (zombie1, zombie2) => {}
+  );
   this.physics.world.setFPS(240);
 }
+
 function update() {
   playerMovement.call(this);
+
+  //Player Health and Vulnerability
+  if (!PLAYER_IS_VULNERABLE) {
+    PLAYER_INVULNERABILITY_COOLDOWN -= 1;
+    if (PLAYER_INVULNERABILITY_COOLDOWN <= 0) {
+      PLAYER_IS_VULNERABLE = true;
+    }
+  }
 
   //Update World
   //TODO Add Chunk Generation
@@ -188,22 +213,44 @@ function playerShoot() {
   //Create Bullet Object and shoot it in the direction of the mouse
   var bullet = this.physics.add.sprite(player.x, player.y, "bullet");
   //Calculate the angle between the player and the mouse
-  var angle = Phaser.Math.Angle.Between(
-    player.x,
-    player.y,
-    pointer.worldX,
-    pointer.worldY
-  );
+  if (PLAYER_AUTOAIM) {
+    if (this.zombies.getChildren().length == 0) {
+      angle = 0;
+    } else {
+      let closestEnemy = this.physics.closest(
+        player,
+        this.zombies.getChildren()
+      );
+      if (closestEnemy.visible) {
+        var angle = Phaser.Math.Angle.Between(
+          player.x,
+          player.y,
+          closestEnemy.x,
+          closestEnemy.y
+        );
+      } else {
+        angle = 0;
+      }
+    }
+  } else {
+    var angle = Phaser.Math.Angle.Between(
+      player.x,
+      player.y,
+      pointer.worldX,
+      pointer.worldY
+    );
+  }
+
   //Rotate the bullet to the angle
 
   bullet.setRotation(angle + Math.PI / 2);
   //Calculate the velocity of the bullet based on the angle
-  var velocity = this.physics.velocityFromRotation(angle, 500);
+  var velocity = this.physics.velocityFromRotation(angle, PLAYER_BULLET_SPEED);
   //Set the velocity of the bullet
   bullet.setVelocity(velocity.x, velocity.y);
   //Collide Bullet with zombies
   this.physics.add.collider(bullet, this.zombies, function (bullet, zombie) {
-    zombie.hit(50);
+    zombie.hit(PLAYER_DAMAGE);
     bullet.destroy();
   });
   PLAYER_CAN_FIRE = false;
