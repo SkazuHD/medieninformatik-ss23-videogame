@@ -118,6 +118,7 @@ function update() {
   //Camera Follow
 
   this.cameras.main.startFollow(player);
+  //Spawn Enemies if there are less than the max
   if (this.zombies.getChildren().length < WORLD_MAX_ENEMIES) {
     if (Phaser.Math.Between(0, 1000) > 995) {
       this.zombies.get(
@@ -126,7 +127,6 @@ function update() {
         "player"
       );
     }
-    //Update Enemys
   }
 }
 function playerShoot() {
