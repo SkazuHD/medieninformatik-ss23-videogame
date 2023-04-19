@@ -1,5 +1,5 @@
-const GAME_HEIGHT = 900;
-const GAME_WIDTH = 1600;
+const GAME_HEIGHT = 720;
+const GAME_WIDTH = 1280;
 const PLAYER_VELOCITY = 300;
 const PLAYER_SPRINT_MULTIPLIER = 1.8;
 const PLAYER_MAX_FIRE_COOLDOWN = 15;
@@ -31,11 +31,20 @@ function preload() {
   this.load.image("sky", "assets/background/sky.png");
   this.load.image("player", "assets/objects/player.png");
   this.load.image("bullet", "assets/objects/bullet.png");
+
+  //World Assets
+  this.load.spritesheet("sprWater", "assets/world/sprWater.png", {
+    frameWidth: 16,
+    frameHeight: 16,
+  });
+  this.load.image("sprSand", "assets/world/sprSand.png");
+  this.load.image("sprGrass", "assets/world/sprGrass.png");
 }
 function createPlayer() {
   player = this.physics.add.sprite(GAME_WIDTH / 2, GAME_HEIGHT / 2, "player");
-  player.setCollideWorldBounds(true);
+  player.setCollideWorldBounds(false); //False for infinite Map
 
+  //Player Inputs
   keys = this.input.keyboard.addKeys({
     up: Phaser.Input.Keyboard.KeyCodes.W,
     down: Phaser.Input.Keyboard.KeyCodes.S,
@@ -44,7 +53,6 @@ function createPlayer() {
     sprint: Phaser.Input.Keyboard.KeyCodes.SHIFT,
     fire: Phaser.Input.Keyboard.KeyCodes.SPACE,
   });
-
   pointer = this.input.activePointer;
 }
 function create() {
@@ -52,20 +60,22 @@ function create() {
 
   //Create player with current context (this)
   createPlayer.call(this);
+
+  //Create World
 }
 function update() {
   playerMovement.call(this);
+
+  //Update World
+
+  //Camera Follow
+  this.cameras.main.centerOn(player.x, player.y);
 }
 function playerShoot() {
   //Create Bullet Object and shoot it in the direction of the mouse
   var bullet = this.physics.add.sprite(player.x, player.y, "bullet");
   //Calculate the angle between the player and the mouse
-  var angle = Phaser.Math.Angle.Between(
-    player.x,
-    player.y,
-    pointer.worldX,
-    pointer.worldY
-  );
+  var angle = Phaser.Math.Angle.Between(player.x, player.y, pointer.worldX, pointer.worldY);
   //Rotate the bullet to the angle
 
   bullet.setRotation(angle + Math.PI / 2);
