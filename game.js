@@ -128,7 +128,7 @@ function spawnEnemy() {
 
       // * NOTE * Enemy can spawn inside of View if the camera is at the edge of the world
       [posX, posY] = calcSpawnLocation.call(this);
-      this.zombies.get(posX, posY, "slime").setScale(2);
+      this.zombies.get(posX, posY, "slime").setScale(1.5);
       //Set Sprite to random frame;
       this.zombies
         .getChildren()
