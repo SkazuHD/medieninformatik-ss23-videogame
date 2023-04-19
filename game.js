@@ -87,6 +87,7 @@ function playerShoot() {
 }
 
 function playerMovement() {
+  //Handle player Shooting
   if ((pointer.isDown || keys.fire.isDown) && PLAYER_CAN_FIRE) {
     playerShoot.call(this);
   } else if (!PLAYER_CAN_FIRE) {
@@ -96,6 +97,7 @@ function playerMovement() {
       PLAYER_CAN_FIRE = true;
     }
   }
+  //Handles player movement on the X axis
   if (keys.left.isDown) {
     player.setVelocityX(-PLAYER_VELOCITY);
   } else if (keys.right.isDown) {
@@ -103,7 +105,7 @@ function playerMovement() {
   } else {
     player.setVelocityX(0);
   }
-
+  //Handles player movement on the Y axis
   if (keys.up.isDown) {
     player.setVelocityY(-PLAYER_VELOCITY);
   } else if (keys.down.isDown) {
@@ -111,6 +113,7 @@ function playerMovement() {
   } else {
     player.setVelocityY(0);
   }
+  //Handles player sprinting and caps the velocity at the max velocity
   player.body.velocity.normalize().scale(PLAYER_VELOCITY);
 
   if (keys.sprint.isDown) {
