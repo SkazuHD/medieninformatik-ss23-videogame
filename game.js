@@ -1,5 +1,9 @@
 const GAME_HEIGHT = 720;
 const GAME_WIDTH = 1280;
+const WORLD_INFINITE = false;
+const WORLD_WIDTH = 2000;
+const WORLD_HEIGHT = 2000;
+
 const PLAYER_VELOCITY = 300;
 const PLAYER_SPRINT_MULTIPLIER = 1.8;
 const PLAYER_MAX_FIRE_COOLDOWN = 15;
@@ -44,8 +48,13 @@ function preload() {
   this.load.image("sprGrass", "assets/world/sprGrass.png");
 }
 function createPlayer() {
-  player = this.physics.add.sprite(GAME_WIDTH / 2, GAME_HEIGHT / 2, "player");
-  player.setCollideWorldBounds(false); //False for infinite Map
+  player = this.physics.add.sprite(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, "player");
+
+  if (WORLD_INFINITE) {
+    player.setCollideWorldBounds(false);
+  } else {
+    player.setCollideWorldBounds(true);
+  }
 
   //Player Inputs
   keys = this.input.keyboard.addKeys({
@@ -59,13 +68,17 @@ function createPlayer() {
   pointer = this.input.activePointer;
 }
 function create() {
-  this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, "sky").setScale(2);
+  this.add.image(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, "sky").setScale(4);
+
+  if (!WORLD_INFINITE) {
+    //Create World
+    this.physics.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+    //Setup Camera
+    this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+  }
 
   //Create player with current context (this)
   createPlayer.call(this);
-
-  //Create World
-
   //Enemys
   this.zombies = this.physics.add.group({
     classType: zomboy,
@@ -87,9 +100,6 @@ function update() {
   //Update World
   //Camera Follow
 
-  //this.cameras.main.centerOn(player.x, player.y);
-
-  this.cameras.main.setBounds(0, 0, 2000, 2000);
   this.cameras.main.startFollow(player);
 
   //Update Enemys
