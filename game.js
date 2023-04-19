@@ -213,24 +213,22 @@ function playerShoot() {
   //Create Bullet Object and shoot it in the direction of the mouse
   var bullet = this.physics.add.sprite(player.x, player.y, "bullet");
   //Calculate the angle between the player and the mouse
-  if (PLAYER_AUTOAIM) {
-    if (this.zombies.getChildren().length == 0) {
-      angle = 0;
-    } else {
-      let closestEnemy = this.physics.closest(
-        player,
-        this.zombies.getChildren()
+  if (this.zombies.getChildren().length == 0) {
+    angle = 0;
+  } else if (PLAYER_AUTOAIM) {
+    let closestEnemy = this.physics.closest(player, this.zombies.getChildren());
+    if (
+      closestEnemy.visible &&
+      this.cameras.main.cull([closestEnemy]).length > 0
+    ) {
+      var angle = Phaser.Math.Angle.Between(
+        player.x,
+        player.y,
+        closestEnemy.x,
+        closestEnemy.y
       );
-      if (closestEnemy.visible) {
-        var angle = Phaser.Math.Angle.Between(
-          player.x,
-          player.y,
-          closestEnemy.x,
-          closestEnemy.y
-        );
-      } else {
-        angle = 0;
-      }
+    } else {
+      angle = 0;
     }
   } else {
     var angle = Phaser.Math.Angle.Between(
