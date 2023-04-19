@@ -1,8 +1,9 @@
-const GAME_HEIGHT = 720;
-const GAME_WIDTH = 1280;
+const GAME_HEIGHT = 900;
+const GAME_WIDTH = 1600;
 const WORLD_INFINITE = false;
 const WORLD_WIDTH = 2000;
 const WORLD_HEIGHT = 2000;
+const WORLD_MAX_ENEMIES = 100;
 
 const PLAYER_VELOCITY = 300;
 const PLAYER_SPRINT_MULTIPLIER = 1.8;
@@ -84,10 +85,26 @@ function create() {
     classType: zomboy,
     runChildUpdate: true,
   });
-  this.zombies.get(200, 150, "player");
-  this.zombies.get(600, 450, "player");
-  this.zombies.get(200, 450, "player");
-  this.zombies.get(600, 150, "player");
+  this.zombies.get(
+    Phaser.Math.Between(0, WORLD_WIDTH),
+    Phaser.Math.Between(0, WORLD_HEIGHT),
+    "player"
+  );
+  this.zombies.get(
+    Phaser.Math.Between(0, WORLD_WIDTH),
+    Phaser.Math.Between(0, WORLD_HEIGHT),
+    "player"
+  );
+  this.zombies.get(
+    Phaser.Math.Between(0, WORLD_WIDTH),
+    Phaser.Math.Between(0, WORLD_HEIGHT),
+    "player"
+  );
+  this.zombies.get(
+    Phaser.Math.Between(0, WORLD_WIDTH),
+    Phaser.Math.Between(0, WORLD_HEIGHT),
+    "player"
+  );
   //Colliders for the player and the zombies
   this.physics.add.collider(player, this.zombies);
   this.physics.add.collider(this.zombies, this.zombies);
@@ -101,8 +118,16 @@ function update() {
   //Camera Follow
 
   this.cameras.main.startFollow(player);
-
-  //Update Enemys
+  if (this.zombies.getChildren().length < WORLD_MAX_ENEMIES) {
+    if (Phaser.Math.Between(0, 1000) > 995) {
+      this.zombies.get(
+        Phaser.Math.Between(0, WORLD_WIDTH),
+        Phaser.Math.Between(0, WORLD_HEIGHT),
+        "player"
+      );
+    }
+    //Update Enemys
+  }
 }
 function playerShoot() {
   //Create Bullet Object and shoot it in the direction of the mouse
