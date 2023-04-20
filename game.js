@@ -1,6 +1,6 @@
 const GAME_HEIGHT = window.innerHeight * 0.85;
 const GAME_WIDTH = window.innerWidth * 0.85;
-const WORLD_INFINITE = false;
+const WORLD_INFINITE = true;
 //Only used if WORLD_INFINITE is false
 const WORLD_WIDTH = 2000;
 const WORLD_HEIGHT = 2000;
@@ -34,6 +34,9 @@ var config = {
     default: "arcade",
     arcade: {
       gravity: { y: 0 },
+      debug: true,
+    },
+    matter: {
       debug: true,
     },
   },
@@ -70,32 +73,59 @@ function calcSpawnLocation() {
   switch (side) {
     case 0:
       //Top
-      posX = Phaser.Math.Between(this.cameras.main.midPoint.x - GAME_WIDTH, this.cameras.main.midPoint.x + GAME_WIDTH);
-      posY = Phaser.Math.Between(this.cameras.main.midPoint.y + GAME_HEIGHT / 2, this.cameras.main.midPoint.y + GAME_HEIGHT);
+      posX = Phaser.Math.Between(
+        this.cameras.main.midPoint.x - GAME_WIDTH,
+        this.cameras.main.midPoint.x + GAME_WIDTH
+      );
+      posY = Phaser.Math.Between(
+        this.cameras.main.midPoint.y + GAME_HEIGHT / 2,
+        this.cameras.main.midPoint.y + GAME_HEIGHT
+      );
       break;
     case 1:
       //Right
-      posX = Phaser.Math.Between(this.cameras.main.midPoint.x + GAME_WIDTH / 2, this.cameras.main.midPoint.x + GAME_WIDTH);
-      posY = Phaser.Math.Between(this.cameras.main.midPoint.y - GAME_HEIGHT, this.cameras.main.midPoint.y + GAME_HEIGHT);
+      posX = Phaser.Math.Between(
+        this.cameras.main.midPoint.x + GAME_WIDTH / 2,
+        this.cameras.main.midPoint.x + GAME_WIDTH
+      );
+      posY = Phaser.Math.Between(
+        this.cameras.main.midPoint.y - GAME_HEIGHT,
+        this.cameras.main.midPoint.y + GAME_HEIGHT
+      );
       break;
     case 2:
       //Bottom
-      posX = Phaser.Math.Between(this.cameras.main.midPoint.x - GAME_WIDTH, this.cameras.main.midPoint.x + GAME_WIDTH);
-      posY = Phaser.Math.Between(this.cameras.main.midPoint.y - GAME_HEIGHT, this.cameras.main.midPoint.y - GAME_HEIGHT / 2);
+      posX = Phaser.Math.Between(
+        this.cameras.main.midPoint.x - GAME_WIDTH,
+        this.cameras.main.midPoint.x + GAME_WIDTH
+      );
+      posY = Phaser.Math.Between(
+        this.cameras.main.midPoint.y - GAME_HEIGHT,
+        this.cameras.main.midPoint.y - GAME_HEIGHT / 2
+      );
       break;
     case 3:
       //Left
-      posX = Phaser.Math.Between(this.cameras.main.midPoint.x - GAME_WIDTH, this.cameras.main.midPoint.x - GAME_WIDTH / 2);
-      posY = Phaser.Math.Between(this.cameras.main.midPoint.y - GAME_HEIGHT, this.cameras.main.midPoint.y + GAME_HEIGHT);
+      posX = Phaser.Math.Between(
+        this.cameras.main.midPoint.x - GAME_WIDTH,
+        this.cameras.main.midPoint.x - GAME_WIDTH / 2
+      );
+      posY = Phaser.Math.Between(
+        this.cameras.main.midPoint.y - GAME_HEIGHT,
+        this.cameras.main.midPoint.y + GAME_HEIGHT
+      );
       break;
     default:
-      console.debug("Error");
+      console.error("Error: Side is not a valid number");
   }
   return [posX, posY];
 }
 
 function spawnEnemy() {
-  if (this.zombies == null || this.zombies.getChildren().length < WORLD_MAX_ENEMIES) {
+  if (
+    this.zombies == null ||
+    this.zombies.getChildren().length < WORLD_MAX_ENEMIES
+  ) {
     if (Phaser.Math.Between(0, 1000) > 990) {
       //Spawn Enemy outside of the camera view
 
@@ -103,7 +133,11 @@ function spawnEnemy() {
       [posX, posY] = calcSpawnLocation.call(this);
       this.zombies.get(posX, posY, "slime").setScale(1.5);
       //Set Sprite to random frame;
-      this.zombies.getChildren()[this.zombies.getChildren().length - 1].setFrame(Phaser.Math.Between(0, 63));
+      this.zombies
+        .getChildren()
+        [this.zombies.getChildren().length - 1].setFrame(
+          Phaser.Math.Between(0, 63)
+        );
     }
   }
 }
@@ -157,7 +191,11 @@ function create() {
     PLAYER_IS_VULNERABLE = false;
     PLAYER_INVULNERABILITY_COOLDOWN = PLAYER_MAX_INVULNERABILITY_COOLDOWN;
   });
-  this.physics.add.collider(this.zombies, this.zombies, (zombie1, zombie2) => {});
+  this.physics.add.collider(
+    this.zombies,
+    this.zombies,
+    (zombie1, zombie2) => {}
+  );
   this.physics.world.setFPS(240);
 }
 
@@ -192,13 +230,26 @@ function playerShoot() {
     angle = 0;
   } else if (PLAYER_AUTOAIM) {
     let closestEnemy = this.physics.closest(player, this.zombies.getChildren());
-    if (closestEnemy.visible && this.cameras.main.cull([closestEnemy]).length > 0) {
-      var angle = Phaser.Math.Angle.Between(player.x, player.y, closestEnemy.x, closestEnemy.y);
+    if (
+      closestEnemy.visible &&
+      this.cameras.main.cull([closestEnemy]).length > 0
+    ) {
+      var angle = Phaser.Math.Angle.Between(
+        player.x,
+        player.y,
+        closestEnemy.x,
+        closestEnemy.y
+      );
     } else {
       angle = 0;
     }
   } else {
-    var angle = Phaser.Math.Angle.Between(player.x, player.y, pointer.worldX, pointer.worldY);
+    var angle = Phaser.Math.Angle.Between(
+      player.x,
+      player.y,
+      pointer.worldX,
+      pointer.worldY
+    );
   }
 
   //Rotate the bullet to the angle
