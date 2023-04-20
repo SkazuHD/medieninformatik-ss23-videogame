@@ -5,7 +5,6 @@ const WORLD_INFINITE = true;
 const WORLD_WIDTH = 2000;
 const WORLD_HEIGHT = 2000;
 const WORLD_MAX_ENEMIES = 75;
-
 //Player Variables
 const PLAYER_VELOCITY = 300;
 const PLAYER_SPRINT_MULTIPLIER = 1.8;
@@ -25,6 +24,7 @@ var PLAYER_HEALTH = 100;
 
 //Enemy Types
 var zombies;
+var zomboyRanger;
 
 var config = {
   type: Phaser.AUTO,
@@ -33,8 +33,12 @@ var config = {
   physics: {
     default: "arcade",
     arcade: {
-      gravity: { y: 0 },
+      maxEntries: 1000,
+      TILE_BIAS: 4096,
+      OVERLAP_BIAS: 4096,
       debug: true,
+      debugShowBody: true,
+      debugShowStaticBody: true,
     },
     matter: {
       debug: true,
@@ -122,11 +126,11 @@ function calcSpawnLocation() {
 }
 
 function spawnEnemy() {
-  if (
-    this.zombies == null ||
-    this.zombies.getChildren().length < WORLD_MAX_ENEMIES
-  ) {
-    if (Phaser.Math.Between(0, 1000) > 990) {
+  enemyCount =
+    this.zombies.getChildren().length + this.zomboyRanger.getChildren().length;
+
+  if (this.zombies == null || enemyCount < WORLD_MAX_ENEMIES) {
+    if (Phaser.Math.Between(0, 1000) > 998) {
       //Spawn Enemy outside of the camera view
 
       // * NOTE * Enemy can spawn inside of View if the camera is at the edge of the world
@@ -138,6 +142,14 @@ function spawnEnemy() {
         [this.zombies.getChildren().length - 1].setFrame(
           Phaser.Math.Between(0, 63)
         );
+    }
+    if (Phaser.Math.Between(0, 1000) > 1000) {
+      //Spawn Enemy outside of the camera view
+
+      // * NOTE * Enemy can spawn inside of View if the camera is at the edge of the world
+      [posX, posY] = calcSpawnLocation.call(this);
+      this.zomboyRanger.get(posX, posY, "player").setScale(1.5);
+      //Set Sprite to random frame;
     }
   }
 }
@@ -178,8 +190,13 @@ function create() {
   //Create player with current context (this)
   createPlayer.call(this);
   //Starting Enemies
+
   this.zombies = this.physics.add.group({
     classType: zomboy,
+    runChildUpdate: true,
+  });
+  this.zomboyRanger = this.physics.add.group({
+    classType: zomboyRange,
     runChildUpdate: true,
   });
 
@@ -191,11 +208,22 @@ function create() {
     PLAYER_IS_VULNERABLE = false;
     PLAYER_INVULNERABILITY_COOLDOWN = PLAYER_MAX_INVULNERABILITY_COOLDOWN;
   });
+
+  this.physics.add.collider(this.zombies, this.zombies, (zombie1, zombie2) => {
+    zombie2.move = false;
+  });
   this.physics.add.collider(
-    this.zombies,
+    this.zomboyRanger,
     this.zombies,
     (zombie1, zombie2) => {}
   );
+  this.physics.add.collider(
+    this.zomboyRanger,
+    this.zomboyRanger,
+    (zombie1, zombie2) => {}
+  );
+  this.physics.add.collider(this.zomboyRanger, player);
+
   this.physics.world.setFPS(240);
 }
 
@@ -280,25 +308,25 @@ function playerMovement() {
   }
   //Handles player movement on the X axis
   if (keys.left.isDown) {
-    player.setVelocityX(-PLAYER_VELOCITY);
+    player.body.setVelocityX(-PLAYER_VELOCITY);
   } else if (keys.right.isDown) {
-    player.setVelocityX(PLAYER_VELOCITY);
+    player.body.setVelocityX(PLAYER_VELOCITY);
   } else {
-    player.setVelocityX(0);
+    player.body.setVelocityX(0);
   }
   //Handles player movement on the Y axis
   if (keys.up.isDown) {
-    player.setVelocityY(-PLAYER_VELOCITY);
+    player.body.setVelocityY(-PLAYER_VELOCITY);
   } else if (keys.down.isDown) {
-    player.setVelocityY(PLAYER_VELOCITY);
+    player.body.setVelocityY(PLAYER_VELOCITY);
   } else {
-    player.setVelocityY(0);
+    player.body.setVelocityY(0);
   }
   //Handles player sprinting and caps the velocity at the max velocity
   player.body.velocity.normalize().scale(PLAYER_VELOCITY);
 
   if (keys.sprint.isDown) {
-    player.setVelocityX(player.body.velocity.x * PLAYER_SPRINT_MULTIPLIER);
-    player.setVelocityY(player.body.velocity.y * PLAYER_SPRINT_MULTIPLIER);
+    player.body.setVelocityX(player.body.velocity.x * PLAYER_SPRINT_MULTIPLIER);
+    player.body.setVelocityY(player.body.velocity.y * PLAYER_SPRINT_MULTIPLIER);
   }
 }
